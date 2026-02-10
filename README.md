@@ -1,7 +1,7 @@
 # Webserver
 Minimal HTTP/1.1 server built from raw sockets to explore request lifecycle, concurrency, and middleware mechanics.
 
-Why This Project Exists-
+## Why This Project Exists;
 Most backend developers only interact with web frameworks (Django, Flask, DRF), which abstract away the underlying request handling. This makes it easy to build apps but hides how requests flow, how concurrency is handled, and how middleware operates under load.
 
 This project was designed to:
