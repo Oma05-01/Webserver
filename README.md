@@ -77,3 +77,88 @@ Key Notes:
 - No TLS / HTTP/2 – Security and modern protocol features are intentionally excluded for learning focus.
 - No Static File Optimizations or Caching – This server focuses on request lifecycle, not performance tuning.
 
+## What I Learned
+**Non-Obvious Insights**
+- TCP is not HTTP. A socket server does not “speak HTTP” automatically. If you don’t send a valid HTTP response line and headers, clients will reject the connection.
+- TCP is a stream, not packets. Even though the network MTU is ~1500 bytes, recv(4096) does not guarantee a full request. Data can arrive partially, which forced proper buffering.
+- Content-Length must be byte-accurate. Calculating string length is incorrect when encoding is involved — HTTP operates on bytes, not Python strings.
+- Concurrency is resource management, not just parallelism. Thread-per-connection works but can exhaust memory quickly. A thread pool provides controlled scalability.
+- Sockets block by default. Without timeouts, a slow or malicious client can starve your server indefinitely.
+- Graceful shutdown is deliberate engineering. Proper shutdown requires coordination between accept loops, worker threads, and task queues.
+- HTTP correctness matters. Even something as small as a missing Host header can invalidate the entire request (as demonstrated using curl -H "Host:").
+
+**Assumptions I Had That Turned Out Wrong**
+I assumed recv() returns the full request in one call.
+I assumed closing the socket after reading was sufficient.
+I assumed PowerShell curl was actual curl.
+I assumed concurrency meant “spawn more threads.”
+I underestimated how much work real web servers do before your application code runs.
+
+**How Real Systems Differ from This Implementation**
+- My server reads only headers and assumes no request body.
+- It does not support keep-alive connections.
+- It does not implement chunked transfer encoding.
+- It does not support HTTP/2 or TLS.
+- Error handling is simplified.
+- Logging is unstructured and synchronous.
+- There is no connection reuse or advanced I/O multiplexing.
+
+## How Production Systems Do This Differently
+**Compared to nginx**
+
+**nginx:**
+- Uses an event-driven architecture (epoll/kqueue), not thread-per-connection.
+- Can handle tens of thousands of concurrent connections.
+- Supports TLS termination, HTTP/2, HTTP/3.
+- Implements advanced buffering, request parsing, and backpressure.
+- Has worker process isolation for fault tolerance.
+
+**Complexity introduced:**
+- Event loops
+- Non-blocking I/O
+- State machines for partial parsing
+- Advanced memory management
+- Compared to Apache HTTP Server
+
+**Apache:**
+- Historically used process-per-connection or hybrid models.
+- Supports dynamic module loading.
+- Implements extensive configuration layers.
+
+**Complexity introduced:**
+- Process management
+- Module lifecycle management
+- Shared memory coordination
+- Compared to Redis
+
+**Redis:**
+- Uses a single-threaded event loop for command execution.
+- Uses I/O multiplexing.
+- Has highly optimized memory layout.
+- Implements persistence (RDB, AOF).
+- Uses efficient data structures in C.
+
+**Complexity introduced:**
+- Custom memory allocator usage
+- Event-driven networking
+- Persistence guarantees
+- Replication and clustering
+
+**Compared to Apache Kafka
+Kafka:**
+- Uses append-only logs.
+- Relies on zero-copy file transfer.
+- Implements partitioning for scalability.
+- Guarantees ordering within partitions.
+- Handles replication and fault tolerance.
+
+**Complexity introduced:**
+- Distributed consensus
+- Leader election
+- Disk-backed durability
+- Consumer offset tracking
+
+## How to Run
+Minimal steps:
+```bash
+python src/server.py
