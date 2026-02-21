@@ -88,11 +88,11 @@ Key Notes:
 - HTTP correctness matters. Even something as small as a missing Host header can invalidate the entire request (as demonstrated using curl -H "Host:").
 
 **Assumptions I Had That Turned Out Wrong**
-I assumed recv() returns the full request in one call.
-I assumed closing the socket after reading was sufficient.
-I assumed PowerShell curl was actual curl.
-I assumed concurrency meant “spawn more threads.”
-I underestimated how much work real web servers do before your application code runs.
+- I assumed recv() returns the full request in one call.
+- I assumed closing the socket after reading was sufficient.
+- I assumed PowerShell curl was actual curl.
+- I assumed concurrency meant “spawn more threads.”
+- I underestimated how much work real web servers do before your application code runs.
 
 **How Real Systems Differ from This Implementation**
 - My server reads only headers and assumes no request body.
