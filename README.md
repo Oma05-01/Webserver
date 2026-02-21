@@ -144,8 +144,8 @@ Key Notes:
 - Persistence guarantees
 - Replication and clustering
 
-**Compared to Apache Kafka
-Kafka:**
+**Compared to Apache Kafka**
+**Kafka:**
 - Uses append-only logs.
 - Relies on zero-copy file transfer.
 - Implements partitioning for scalability.
@@ -159,6 +159,5 @@ Kafka:**
 - Consumer offset tracking
 
 ## How to Run
-Minimal steps:
 ```bash
 python src/server.py
